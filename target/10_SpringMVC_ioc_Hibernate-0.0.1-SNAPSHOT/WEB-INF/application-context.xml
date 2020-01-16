@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">
+
+	<!-- Activation des annotations de dépendances Value, Autowired, Resource 
+		et Inject -->
+
+	<context:annotation-config />
+
+	<!-- Activation de la detection automatique des composants Componenet, Repository, 
+		Service,Controller -->
+	<context:component-scan
+		base-package="fr.adaming" />
+
+	<!-- spécifier le chemin du fichier db.propertie -->
+	<context:property-placeholder
+		location="classpath*:db.properties" />
+
+
+	<!-- declaration du beans data source -->
+	<bean id="dataSourceBean"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<!-- injection par modificateur -->
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.user}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+
+
+	</bean>
+
+	<!-- declaration d'un bean de session factory -->
+	<bean id="sessionFactoryBean"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+
+		<!-- injection par setter le bean datasource -->
+		<property name="dataSource" ref="dataSourceBean"></property>
+
+		<!-- spécifier les classes persistantes -->
+		<property name="packagesToScan" value="fr.adaming.entities"></property>
+
+		<!-- Spécifier les propriétés de hibernate -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.hbm2ddl.auto">${hb.strategy}</prop>
+				<prop key="hibernate.dialect">${hb.dialecte}</prop>
+				<prop key="hibernate.show_sql">${hb.sql}</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- Declaration du bean trasncationManager -->
+	<bean id="transactionManagerBean"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+
+		<!-- injecter par le setter la session beanfactory -->
+		<property name="sessionFactory" ref="sessionFactoryBean"></property>
+	</bean>
+
+	<tx:annotation-driven
+		transaction-manager="transactionManagerBean" />
+
+</beans>
+
+
